@@ -6,14 +6,20 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Batch;
+using Microsoft.AspNetCore.OData.NewtonsoftJson;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
 using Newtonsoft.Json;
 using OtripleS.Web.Api.Brokers.DateTimes;
 using OtripleS.Web.Api.Brokers.Loggings;
 using OtripleS.Web.Api.Brokers.Storages;
 using OtripleS.Web.Api.Brokers.UserManagement;
+using OtripleS.Web.Api.Models.Students;
 using OtripleS.Web.Api.Models.Users;
 using OtripleS.Web.Api.Services.Foundations.AssignmentAttachments;
 using OtripleS.Web.Api.Services.Foundations.Assignments;
@@ -61,7 +67,16 @@ namespace OtripleS.Web.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            var defaultBatchHandler = new DefaultODataBatchHandler();
+            defaultBatchHandler.MessageQuotas.MaxNestingDepth = 2;
+            defaultBatchHandler.MessageQuotas.MaxOperationsPerChangeset = 10;
+            defaultBatchHandler.MessageQuotas.MaxReceivedMessageSize = 100;
+
+            services.AddControllers()
+                .AddODataNewtonsoftJson()
+                .AddOData(options => options.AddRouteComponents("api", GetEdmModel(), defaultBatchHandler)
+                .Select().Filter().Expand().OrderBy());
+
             AddNewtonSoftJson(services);
             services.AddLogging();
             services.AddDbContext<StorageBroker>();
@@ -118,6 +133,7 @@ namespace OtripleS.Web.Api
                 applicationBuilder.UseDeveloperExceptionPage();
             }
 
+            applicationBuilder.UseODataBatching();
             applicationBuilder.UseHttpsRedirection();
             applicationBuilder.UseRouting();
             applicationBuilder.UseAuthorization();
@@ -132,6 +148,13 @@ namespace OtripleS.Web.Api
                 options.SerializerSettings.Converters.Add(new JsonStringEnumConverter());
                 options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
             });
+        }
+
+        private static IEdmModel GetEdmModel()
+        {
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            builder.EntitySet<Student>("Students");
+            return builder.GetEdmModel();
         }
     }
 }
