@@ -25,7 +25,7 @@ namespace OtripleS.Web.Api.Controllers
             this.studentService = studentService;
 
         [HttpPost]
-        public async ValueTask<ActionResult<Student>> PostStudentAsync(Student student)
+        public async ValueTask<ActionResult<Student>> PushStudentAsync(Student student)
         {
             try
             {
