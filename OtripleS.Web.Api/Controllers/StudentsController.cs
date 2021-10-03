@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using OtripleS.Web.Api.Models.Students;
 using OtripleS.Web.Api.Models.Students.Exceptions;
 using OtripleS.Web.Api.Services.Foundations.Students;
@@ -24,7 +25,7 @@ namespace OtripleS.Web.Api.Controllers
             this.studentService = studentService;
 
         [HttpPost]
-        public async ValueTask<ActionResult<Student>> PostStudentAsync(Student student)
+        public async ValueTask<ActionResult<Student>> AddStudentAsync(Student student)
         {
             try
             {
@@ -53,6 +54,7 @@ namespace OtripleS.Web.Api.Controllers
         }
 
         [HttpGet]
+        [EnableQuery]
         public ActionResult<IQueryable<Student>> GetAllStudents()
         {
             try
