@@ -42,8 +42,6 @@ namespace OtripleS.Web.Api.Services.Foundations.Fees
         {
             IQueryable<Fee> storageFees = this.storageBroker.SelectAllFees();
 
-            ValidateStorageFees(storageFees);
-
             return storageFees;
         });
 
